@@ -1,0 +1,11 @@
+{
+  "name": "chat-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm install --prifix server && npm install --prefix public/chat-app && npm run build --prefix public/chat-app"
+  },
+  "author": "",
+  "license": "ISC"
+}
