@@ -1,75 +1,100 @@
 const User = require("../model/userModel");
-const brcypt = require("bcrypt");
+const bcrypt = require("bcrypt"); // Corrected the typo
 
-module.exports.register = async (req,res,next) => {
-    try{
-        const {username, email , password } = req.body;
-    const usernameCheck = await User.findOne({username});
+module.exports.register = async (req, res, next) => {
+  try {
+    const { username, email, password } = req.body;
 
-    if(usernameCheck)
-        return res.json({msg: "Username alrready used", status: false });
-    const emailCheck = await User.findOne({email});
-    if(emailCheck)
-        return res.json({msg: "Email alrready used", status: false });
-const hashPassword = await brcypt.hash(password , 10);
-const user = await User.create({
-    email,
-    username,
-    password: hashPassword,
-});
-delete user.password;
-return res.json({status : true , user});
-    }
-    catch(ex){
-        next(ex);
-    }
-    
+    // Check if username is already in use
+    const usernameCheck = await User.findOne({ username });
+    if (usernameCheck)
+      return res.status(400).json({ msg: "Username already used", status: false });
+
+    // Check if email is already in use
+    const emailCheck = await User.findOne({ email });
+    if (emailCheck)
+      return res.status(400).json({ msg: "Email already used", status: false });
+
+    // Hash the password and create a new user
+    const hashPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      email,
+      username,
+      password: hashPassword,
+    });
+
+    const userObj = user.toObject(); // Convert to plain object
+    delete userObj.password; // Remove password from response
+
+    return res.json({ status: true, user: userObj });
+  } catch (ex) {
+    console.error(ex); // Log the error for debugging
+    next(ex);
+  }
 };
 
-module.exports.login = async (req,res,next) => {
-    try{
-    const {username, password } = req.body;
-    const user = await User.findOne({username});
+module.exports.login = async (req, res, next) => {
+  try {
+    const { username, password } = req.body;
 
-    if(!user)
-        return res.json({msg: "Username or password is incorrect", status: false });
-    const isPasswordValid = await brcypt.compare(password , user.password);
-    if(!isPasswordValid)
-        return res.json({msg: "Username or password is incorrect", status: false });
-    delete user.password;
-    
-return res.json({status : true , user});
-    }
-    catch(ex){
-        next(ex);
-    }
-    
+    // Find the user by username
+    const user = await User.findOne({ username });
+    if (!user)
+      return res.status(400).json({ msg: "Username or password is incorrect", status: false });
+
+    // Check if the password is valid
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid)
+      return res.status(400).json({ msg: "Username or password is incorrect", status: false });
+
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    return res.json({ status: true, user: userObj });
+  } catch (ex) {
+    console.error(ex);
+    next(ex);
+  }
 };
 
-module.exports.setAvatar = async (req,res,next) => {
-    try{
-        const userId = req.params.id;
-        const avatarImage = req.body.image;
-        const userData = await User.findByIdAndUpdate(userId , {
-            isAvatarImageSet: true,
-            avatarImage,
-        });
-        return res.json({isSet: userData.isAvatarImageSet,image:userData.avatarImage})
-    } catch(ex){
-        next(ex);
-    }
-}
+module.exports.setAvatar = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const avatarImage = req.body.image;
 
-module.exports.getAllUsers = async (req,res,next) => {
-    try{
-        const users = await User.find({_id:{$ne:req.params.id}}).select([
-            "email",
-            "username",
-            "avatarImage",
-            "_id",
-        ]);
-        return res.json(users)
-    }catch(ex){
-        next(ex);
+    // Update user avatar
+    const userData = await User.findByIdAndUpdate(
+      userId,
+      {
+        isAvatarImageSet: true,
+        avatarImage,
+      },
+      { new: true }
+    );
+
+    if (!userData) {
+      return res.status(404).json({ msg: "User not found" });
     }
-}
+
+    return res.json({ isSet: userData.isAvatarImageSet, image: userData.avatarImage });
+  } catch (ex) {
+    console.error(ex);
+    next(ex);
+  }
+};
+
+module.exports.getAllUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({ _id: { $ne: req.params.id } }).select([
+      "email",
+      "username",
+      "avatarImage",
+      "_id",
+    ]);
+
+    return res.json(users);
+  } catch (ex) {
+    console.error(ex);
+    next(ex);
+  }
+};
