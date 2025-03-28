@@ -16,11 +16,10 @@ module.exports.register = async (req, res, next) => {
       return res.status(400).json({ msg: "Email already used", status: false });
 
     // Hash the password and create a new user
-    const hashPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       email,
       username,
-      password: hashPassword,
+      password: password,
     });
 
     const userObj = user.toObject(); // Convert to plain object

@@ -25,34 +25,37 @@ function Register() {
         theme: 'dark',
     };
 
-    useEffect(()=> {
-      if(localStorage.getItem('chat-app-user')) {
-        navigate('/')
+    useEffect(() => {
+      if (localStorage.getItem('chat-app-user')) {
+        navigate('/');
       }
-    },[])
-
+    }, [navigate]); // Fixed dependency array
+    
     const handleSubmit = async (event) => {
       event.preventDefault();
-      if (handleValidation()) {
-          console.log("in validation", registerRoute);
-          const { password, username, email } = values;
-              const { data } = await axios.post(registerRoute, {
-                  username,
-                  email,
-                  password,
-              });
-              console.log(data);
-              toast.success("Registration successful!", toastOptions);
-              if(data.status === false){
-                toast.error(data.msg , toastOptions);
-              }
-              if(data.status=== true){
-                localStorage.setItem('chat-app-user' , JSON.stringify(data.user));
-              }
-              navigate("/");
-
+      if (!handleValidation()) return;
+    
+      try {
+        const { password, username, email } = values;
+        const { data } = await axios.post(registerRoute, {
+          username,
+          email,
+          password,
+        });
+    
+        if (data.status === false) {
+          toast.error(data.msg, toastOptions);
+          return; // Don't navigate if registration fails
+        }
+    
+        localStorage.setItem('chat-app-user', JSON.stringify(data.user));
+        toast.success("Registration successful!", toastOptions);
+        navigate("/"); // Only navigate on success
+      } catch (error) {
+        toast.error("Registration failed. Please try again.", toastOptions);
+        console.error("Registration error:", error);
       }
-  };
+    };
   
 
     const handleValidation = () => {
