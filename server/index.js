@@ -24,35 +24,15 @@ app.use(express.json());
 app.use('/api/auth', userRoutes);
 app.use('/api/messages', messageRoute);
 
-// --------------------------deployment------------------------------
-const path = require('path');
-const __dirname1 = path.resolve();
-
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname1, '..', 'public/chat-app/build')));
-
-  app.get('*', (req, res) =>
-    res.sendFile(
-      path.resolve(__dirname1, '..', 'public/chat-app', 'build', 'index.html')
-    )
-  );
-} else {
-  app.get('/', (req, res) => {
-    res.send('API is running..');
-  });
-}
-
-// --------------------------deployment------------------------------
+// Basic route for checking API status
+app.get('/', (req, res) => {
+  res.send('API is running..');
+});
 
 // Database connection with Mongoose
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 10000, // 10-second timeout
-      family: 4, // Use IPv4
-    });
+    await mongoose.connect(process.env.MONGO_URL);
     console.log('DB Connection Successfully');
   } catch (error) {
     console.error('DB Connection Error: ', error.message);
