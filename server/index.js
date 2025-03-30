@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const messageRoute = require('./routes/messagesRoute');
 const userRoutes = require('./routes/userRoute');
 const socket = require('socket.io');
-const User = require("../model/userModel");
+const User = require("./model/userModel");
 
 const app = express();
 
