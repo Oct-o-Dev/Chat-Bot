@@ -11,7 +11,12 @@ const socket = require('socket.io');
 const app = express();
 
 // Middleware setup
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? [/\.vercel\.app$/, process.env.FRONTEND_URL].filter(Boolean)
+    : 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
@@ -65,7 +70,9 @@ const server = app.listen(process.env.PORT || 5000, () => {
 // Socket.io setup
 const io = socket(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: process.env.NODE_ENV === 'production' 
+      ? [/\.vercel\.app$/, process.env.FRONTEND_URL].filter(Boolean)
+      : 'http://localhost:3000',
     credentials: true,
   },
 });

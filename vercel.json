@@ -1,0 +1,11 @@
+{
+  "buildCommand": "cd public/chat-app && npm install && npm run build",
+  "outputDirectory": "public/chat-app/build",
+  "framework": "create-react-app",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ]
+} 

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm install --prifix server && npm install --prefix public/chat-app && npm run build --prefix public/chat-app"
+    "build": "npm install --prefix server && npm install --prefix public/chat-app && npm run build --prefix public/chat-app"
   },
   "author": "",
   "license": "ISC"
