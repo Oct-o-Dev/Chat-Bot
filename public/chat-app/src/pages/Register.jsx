@@ -37,23 +37,29 @@ function Register() {
     
       try {
         const { password, username, email } = values;
-        const { data } = await axios.post(registerRoute, {
+        console.log('Attempting registration with:', { username, email });
+        
+        const response = await axios.post(registerRoute, {
           username,
           email,
           password,
         });
+        
+        const { data } = response;
+        console.log('Registration response:', data);
     
         if (data.status === false) {
           toast.error(data.msg, toastOptions);
-          return; // Don't navigate if registration fails
+          return;
         }
     
         localStorage.setItem('chat-app-user', JSON.stringify(data.user));
         toast.success("Registration successful!", toastOptions);
-        navigate("/"); // Only navigate on success
+        navigate("/");
       } catch (error) {
-        toast.error("Registration failed. Please try again.", toastOptions);
-        console.error("Registration error:", error);
+        console.error('Registration error details:', error.response?.data || error.message);
+        const errorMessage = error.response?.data?.msg || "Registration failed. Please try again.";
+        toast.error(errorMessage, toastOptions);
       }
     };
   

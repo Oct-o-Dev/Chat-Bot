@@ -9,16 +9,33 @@ const hashPassword = (password) => {
 module.exports.register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
+    
+    // Log the received data (excluding password)
+    console.log('Registration attempt:', { username, email });
+
+    // Validate required fields
+    if (!username || !email || !password) {
+      console.log('Missing required fields');
+      return res.status(400).json({ 
+        msg: "All fields are required", 
+        status: false,
+        fields: { username: !!username, email: !!email, password: !!password }
+      });
+    }
 
     // Check if username is already in use
     const usernameCheck = await User.findOne({ username });
-    if (usernameCheck)
+    if (usernameCheck) {
+      console.log('Username already exists:', username);
       return res.status(400).json({ msg: "Username already used", status: false });
+    }
 
     // Check if email is already in use
     const emailCheck = await User.findOne({ email });
-    if (emailCheck)
+    if (emailCheck) {
+      console.log('Email already exists:', email);
       return res.status(400).json({ msg: "Email already used", status: false });
+    }
 
     // Hash the password and create a new user
     const hashedPassword = hashPassword(password);
@@ -31,10 +48,14 @@ module.exports.register = async (req, res, next) => {
     const userObj = user.toObject(); // Convert to plain object
     delete userObj.password; // Remove password from response
 
+    console.log('User registered successfully:', username);
     return res.json({ status: true, user: userObj });
   } catch (ex) {
-    console.error(ex); // Log the error for debugging
-    next(ex);
+    console.error('Registration error:', ex);
+    return res.status(500).json({ 
+      msg: "Internal server error during registration", 
+      status: false 
+    });
   }
 };
 
