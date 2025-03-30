@@ -1,5 +1,10 @@
 const User = require("../model/userModel");
-const bcrypt = require("bcrypt"); // Corrected the typo
+const crypto = require('crypto');
+
+// Function to hash password
+const hashPassword = (password) => {
+  return crypto.createHash('sha256').update(password).digest('hex');
+};
 
 module.exports.register = async (req, res, next) => {
   try {
@@ -16,10 +21,11 @@ module.exports.register = async (req, res, next) => {
       return res.status(400).json({ msg: "Email already used", status: false });
 
     // Hash the password and create a new user
+    const hashedPassword = hashPassword(password);
     const user = await User.create({
       email,
       username,
-      password: password,
+      password: hashedPassword,
     });
 
     const userObj = user.toObject(); // Convert to plain object
@@ -42,7 +48,8 @@ module.exports.login = async (req, res, next) => {
       return res.status(400).json({ msg: "Username or password is incorrect", status: false });
 
     // Check if the password is valid
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const hashedPassword = hashPassword(password);
+    const isPasswordValid = hashedPassword === user.password;
     if (!isPasswordValid)
       return res.status(400).json({ msg: "Username or password is incorrect", status: false });
 
